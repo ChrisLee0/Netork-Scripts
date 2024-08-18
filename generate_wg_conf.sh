@@ -33,6 +33,8 @@ cat > "${WG_SERVER_CONF}" <<EOL
 Address = 10.0.8.1/24
 ListenPort = ${PORT}
 PrivateKey = ${SERVER_PRIVATE_KEY}
+PostUp = sysctl -w net.ipv4.ip_forward=1 && iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE && iptables -A FORWARD -i wg0 -o eth0 -j ACCEPT && iptables -A FORWARD -i eth0 -o wg0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+PostDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE && iptables -D FORWARD -i wg0 -o eth0 -j ACCEPT && iptables -D FORWARD -i eth0 -o wg0 -m state --state RELATED,ESTABLISHED -j ACCEPT && sysctl -w net.ipv4.ip_forward=0
 
 [Peer]
 PublicKey = ${CLIENT_PUBLIC_KEY}
